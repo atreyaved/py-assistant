@@ -1,0 +1,6 @@
+gtts
+playsound2
+PREFS
+pyjokes
+pywhatkit
+wikipedia
