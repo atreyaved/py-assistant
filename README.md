@@ -1,15 +1,18 @@
 # py-assistant
 
 **py-assistant** is a begginers project console assistant that has some incredible commands such as:
-- `wikipedia`: Searchs the given text in wikipedia
-- `date`: Gives you the current date (dd/mm/yy)
-- `guess_a_number`: Simple guess number game
-- `joke`: Tells you a joke
-- `hour`: Gives you the current hour
-- `note`: Creates a file with the given text and open text editor
+- `wikipedia`: Searchs the given text in wikipedia.
+- `date`: Gives you the current date (dd/mm/yy).
+- `guess_the_number`: Simple guess number game.
+- `joke`: Tells you a joke.
+- `hour`: Gives you the current hour.
+- `note`: Creates a file with the given text and open text editor.
+- `exit`: Exits the program.
+- `quote`: Gives you a random quote.
+- `language`: Changes the current language..
 
-### Installation:
-##### 1. Clone the repository:
+### Installation: 
+###### 1. Clone the repository:
 ```sh
 git clone https://github.com/Patitotective/py-assistant # Crates a folder called py-assistant and clone the repository to it
 cd py-assistant # Enter to the recently created py-assistant folder

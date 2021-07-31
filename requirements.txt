@@ -4,3 +4,4 @@ PREFS
 pyjokes
 pywhatkit
 wikipedia
+requests

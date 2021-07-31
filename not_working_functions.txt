@@ -1,0 +1,11 @@
+
+A adventure Game
+def AdventureGame(self):
+    os.system('python3 Adventure.py') # Fixed
+
+
+A command to list all the games
+def ListGames(self):
+    self.talk("here are the list of games")
+    self.talk("guess_the_number")
+    self.talk("adventure")

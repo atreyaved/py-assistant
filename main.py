@@ -1,3 +1,6 @@
+# main.py
+
+# Libraries
 import datetime
 import gtts
 
@@ -11,8 +14,12 @@ import subprocess
 import sys
 
 import pyjokes
+import requests
 
 import wikipedia
+
+# Dependencies
+import adventure
 
 class Assistant:
 	"""Assistant is a cool assistant"""
@@ -20,23 +27,40 @@ class Assistant:
 	def __init__(self):
 		super(Assistant, self).__init__()
 
-		default_prefs = {"lang": "en"}
-		self.prefs = PREFS.PREFS(default_prefs)
+		self.prefs = PREFS.PREFS({"lang": "en"})
+		self.translations = PREFS.ReadPREFSFile("translations")
+
+		self.commands = {
+			"wikipedia": self.translations["wikipedia"][self.prefs.file["lang"]],
+			"date": self.translations["date"][self.prefs.file["lang"]],
+			"guess_the_number": self.translations["guess_the_number"][self.prefs.file["lang"]],
+			"adventure_game": self.translations["adventure_game"][self.prefs.file["lang"]]
+			"joke": self.translations["joke"][self.prefs.file["lang"]],
+			"hour": self.translations["hour"][self.prefs.file["lang"]],
+			"note": self.translations["note"][self.prefs.file["lang"]],
+			"quote": self.translations["quote"][self.prefs.file["lang"]],
+			"language": self.translations["language"][self.prefs.file["lang"]], 
+			"supported_languages": self.translations["supported_languages"][self.prefs.file["lang"]], 
+
+			"help": self.translations["help"][self.prefs.file["lang"]],
+			"exit": self.translations["exit"][self.prefs.file["lang"]]
+		}
+
+		self.supported_languages = {
+			"es": ["spanish", "español", "sp", "es"],
+			"en": ["english", "inglés", "ingles", "en"], 
+			"hd": ["hindi", "hd"], 
+			"jp": ["japanese", "jp", "japonés", "japones"]
+		}
 
 		self.ask()
 
 	def ask(self):
 		"""Here the commands
 		"""
-		commands = {"wikipedia": "Searchs the given text in wikipedia", 
-			"date": "Gives you the current date (dd/mm/yy)", 
-			"guess_a_number": "Simple guess number game", 
-			"joke": "Tells you a joke", 
-			"hour": "Gives you the current hour", 
-			"note": "Creates a file with the given text and open text editor", 
-			"exit": "Exits the program"}
+		self.talk(self.translations["ask"][self.prefs.file["lang"]], print_text=False)
+		text = input(self.translations["ask"][self.prefs.file["lang"]])
 
-		text = input("What do you want to do: ")
 		command = text.split()[0]
 		args = text[len(command) + 1:]
 
@@ -46,9 +70,12 @@ class Assistant:
 		elif command == "date":
 			date = datetime.datetime.now().strftime('%d/%m/%Y')
 			self.talk(date)
-		
-		elif "guess_a_number" in command:
+
+		elif  command == "guess_the_number":
 			self.guess()
+
+		elif command == "adventure_game":
+			self.adventure()
 
 		elif command == "joke":
 			self.talk(pyjokes.get_joke())
@@ -56,46 +83,62 @@ class Assistant:
 		elif command == "hour":
 			time = datetime.datetime.now().strftime('%I:%M %p')
 			self.talk(time)
-		
+
 		elif command == "note":
-			self.note(args)		
-		
+			self.note(args)
+
+		# elif command == "info":
+			# self.info()
+
 		elif command == "help":
-			self.talk( "\n".join([f"{k}: {v}" for k, v in commands.items()]) )
+			self.talk( "\n".join([f"{k}: {v}" for k, v in self.commands.items()]) )
 
 		elif command == "exit":
 			sys.exit()
 			return
+
+		elif command == "quote":
+			self.quote()
+
+		elif command == "supported_languages":
+			self.talk( "\n".join([f"{k}: {v}" for k, v in self.supported_languages.items()]) )
+
+		elif command == "language":
+			self.change_language(args)
+
 		else:
-			self.talk("Couldn't understand you, type help to see the available commands")
-		
+			self.talk(self.translations["not_found"][self.prefs.file["lang"]])
+
 		self.ask()
 
 	def search_wikipedia(self, search):
 		results = wikipedia.summary(search, 3)
 		self.talk(results)
 
-	def talk(self, text, save=False, lang=None, filename="temp", extension="mp3"):
+	def talk(self, text, save=False, lang=None, filename="temp", extension="mp3", print_text=True):
 
-		lang = self.prefs.file["lang"]
+		lang = self.prefs.file["lang"] if lang == None else lang
 
-		sound = gtts.gTTS(text, lang=lang)
+		try:
+			sound = gtts.gTTS(text, lang=lang)
+		except:
+			sound = gtts.gTTS(text, lang="en") 
 
 		sound.save(f'{filename}.{extension}')
-		
-		print(text)
+
+		if print_text: print(text)
 
 		playsound2.playsound(f"{filename}.{extension}")
 		if not save: os.remove(f"{filename}.{extension}")
 
 	def note(self, text, filename="", extension="txt"):
-		
+
 		currentdate = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 		filename =  currentdate + f".{extension}" if filename == "" else filename + f".{extension}"
-		
+
 		with open(filename, "w") as f: #what is the difference between this and f = open()
 			f.write(text)
-		
+
 		try:
 			platform = sys.platform
 
@@ -117,25 +160,36 @@ class Assistant:
 					note(write_down)
 					speak("Done!")
 
+	def quote(self):
+		url = 'https://api.quotable.io/random'
+		request = requests.get(url)
+
+		info = request.json()
+		quote = info['content']
+		author = info["author"]
+		year = info["dateAdded"].split("-")[0]
+
+		self.talk(f"«{quote}» -{author} {year}")
+
 	def guess(self, number_to_guess=None):
 		if number_to_guess == None: self.talk("<- Guess a number between 0 and 100 ->")
 
 		number_to_guess = random.randint(0, 101) if number_to_guess == None else number_to_guess
-		
+
 		number = int(input("Enter a number: "))
-		
-		if number > number_to_guess: 
+
+		if number > number_to_guess:
 			self.talk("Wrong, try a smaller number.")
 			self.guess(number_to_guess=number_to_guess)
-		
+
 		elif number < number_to_guess:
-			self.talk("Wrong, try a bigger number.") 
-			self.guess(number_to_guess=number_to_guess)   
-	
+			self.talk("Wrong, try a bigger number.")
+			self.guess(number_to_guess=number_to_guess)
+
 		elif number == number_to_guess:
-			self.talk("Congratulations, you have won.") 
+			self.talk("Congratulations, you have won.")
 			choice = input("Do you want to play again? (y/n): ").lower()
-			
+
 			if choice == "y" or choice == "yes":
 				self.guess()
 			else:
@@ -144,10 +198,47 @@ class Assistant:
 			self.talk("Please, try again")
 			self.guess(number_to_guess=number_to_guess)
 
+	def info(self):
+		self.talk("Enter your information: ")
+
+		self.talk("Name", print_text=False)
+		name = input("\tName: ")
+		self.prefs.WritePrefs(name, {})
+
+		self.talk("Nickname", print_text=False)
+		nickname = input("\tNickname: ")
+		self.prefs.WritePrefs(f"{name}/nickname", nickname)
+
+		self.talk("Age", print_text=False)
+		age = input("\tAge: ")
+		self.prefs.WritePrefs(f"{name}/age", age)
+
+		self.talk("Discord", print_text=False)
+		discord = input("\tDiscord: ")
+		self.prefs.WritePrefs(f"{name}/discord", discord)
+
+	def change_language(self, lang):
+		languages = []
+
+		for k, v in self.supported_languages.items():
+			if lang in v:
+				languages.append(k)
+
+		if len(languages) == 0:
+			self.talk(self.translations["not_lang"][self.prefs.file["lang"]])
+			return
+		elif len(languages) > 1:
+			self.talk(self.translations["not_understood"][self.prefs.file["lang"]])
+			return
+
+		self.prefs.WritePrefs("lang", languages[0])
+
+	def adventure(self):
+		adventure.start()
 
 # Elsa#2561
 # https://github.com/atreyaved
-# Pronouns: he
+# Pronouns: she
 
 # ᑎᗩᑕᖇᗴᝪᑌᔑᗞᗩᗯᑎ596#9360
 # https://github.com/NacreousDawn596
@@ -155,7 +246,7 @@ class Assistant:
 
 # patitotective#0217
 # https://github.com/Patitotective
-# Pronouns: she
+# Pronouns: he
 
 
 def main():
