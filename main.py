@@ -34,7 +34,7 @@ class Assistant:
 			"wikipedia": self.translations["wikipedia"][self.prefs.file["lang"]],
 			"date": self.translations["date"][self.prefs.file["lang"]],
 			"guess_the_number": self.translations["guess_the_number"][self.prefs.file["lang"]],
-			"adventure_game": self.translations["adventure_game"][self.prefs.file["lang"]]
+			"adventure_game": self.translations["adventure_game"][self.prefs.file["lang"]], 
 			"joke": self.translations["joke"][self.prefs.file["lang"]],
 			"hour": self.translations["hour"][self.prefs.file["lang"]],
 			"note": self.translations["note"][self.prefs.file["lang"]],
