@@ -17,9 +17,17 @@ import pyjokes
 import requests
 
 import wikipedia
+import random
+
+import string
+import pywhatkit
 
 # Dependencies
 import adventure
+import json
+
+import requests
+import time
 
 class Assistant:
 	"""Assistant is a cool assistant"""
@@ -34,13 +42,13 @@ class Assistant:
 			"wikipedia": self.translations["wikipedia"][self.prefs.file["lang"]],
 			"date": self.translations["date"][self.prefs.file["lang"]],
 			"guess_the_number": self.translations["guess_the_number"][self.prefs.file["lang"]],
-			"adventure_game": self.translations["adventure_game"][self.prefs.file["lang"]], 
+			"adventure_game": self.translations["adventure_game"][self.prefs.file["lang"]],
 			"joke": self.translations["joke"][self.prefs.file["lang"]],
 			"hour": self.translations["hour"][self.prefs.file["lang"]],
 			"note": self.translations["note"][self.prefs.file["lang"]],
 			"quote": self.translations["quote"][self.prefs.file["lang"]],
-			"language": self.translations["language"][self.prefs.file["lang"]], 
-			"supported_languages": self.translations["supported_languages"][self.prefs.file["lang"]], 
+			"language": self.translations["language"][self.prefs.file["lang"]],
+			"supported_languages": self.translations["supported_languages"][self.prefs.file["lang"]],
 
 			"help": self.translations["help"][self.prefs.file["lang"]],
 			"exit": self.translations["exit"][self.prefs.file["lang"]]
@@ -48,8 +56,8 @@ class Assistant:
 
 		self.supported_languages = {
 			"es": ["spanish", "español", "sp", "es"],
-			"en": ["english", "inglés", "ingles", "en"], 
-			"hd": ["hindi", "hd"], 
+			"en": ["english", "inglés", "ingles", "en"],
+			"hd": ["hindi", "hd"],
 			"jp": ["japanese", "jp", "japonés", "japones"]
 		}
 
@@ -58,8 +66,8 @@ class Assistant:
 	def ask(self):
 		"""Here the commands
 		"""
-		self.talk(self.translations["ask"][self.prefs.file["lang"]], print_text=False)
-		text = input(self.translations["ask"][self.prefs.file["lang"]])
+		self.talk(self.get_translation("ask"), print_text=False)
+		text = input(self.get_translation("ask"))
 
 		command = text.split()[0]
 		args = text[len(command) + 1:]
@@ -101,19 +109,39 @@ class Assistant:
 			self.quote()
 
 		elif command == "supported_languages":
-			self.talk( "\n".join([f"{k}: {v}" for k, v in self.supported_languages.items()]) )
+			self.talk(" - ".join([v[0] for k, v in self.supported_languages.items()]) )
 
 		elif command == "language":
 			self.change_language(args)
+		elif command == "password":
+			self.password()
+
+		elif 'play' in command:
+			self.play_youtube(args)
+
+		elif 'talk' in command :
+			self.talk("Well, thats what im here to do, to talk to you and help you with your needs")
+		elif 'dance' in command:
+			self.talk("ummm, soo, i cant really do that because, im a robot")
+		elif '	'
+
 
 		else:
-			self.talk(self.translations["not_found"][self.prefs.file["lang"]])
+			self.talk(self.get_translation("not_found"))
 
 		self.ask()
 
 	def search_wikipedia(self, search):
 		results = wikipedia.summary(search, 3)
 		self.talk(results)
+
+	def get_translation(self, key):
+		try:
+			text = self.translations[key][self.prefs.file["lang"]]
+		except:
+			text = self.translations[key]["en"]
+
+		return text
 
 	def talk(self, text, save=False, lang=None, filename="temp", extension="mp3", print_text=True):
 
@@ -122,7 +150,7 @@ class Assistant:
 		try:
 			sound = gtts.gTTS(text, lang=lang)
 		except:
-			sound = gtts.gTTS(text, lang="en") 
+			sound = gtts.gTTS(text, lang="en")
 
 		sound.save(f'{filename}.{extension}')
 
@@ -167,9 +195,8 @@ class Assistant:
 		info = request.json()
 		quote = info['content']
 		author = info["author"]
-		year = info["dateAdded"].split("-")[0]
 
-		self.talk(f"«{quote}» -{author} {year}")
+		self.talk(f"«{quote}» -{author}")
 
 	def guess(self, number_to_guess=None):
 		if number_to_guess == None: self.talk("<- Guess a number between 0 and 100 ->")
@@ -225,16 +252,32 @@ class Assistant:
 				languages.append(k)
 
 		if len(languages) == 0:
-			self.talk(self.translations["not_lang"][self.prefs.file["lang"]])
+			self.talk(self.get_translation("not_lang"))
 			return
 		elif len(languages) > 1:
-			self.talk(self.translations["not_understood"][self.prefs.file["lang"]])
+			self.talk(self.get_translation("not_understood"))
 			return
 
 		self.prefs.WritePrefs("lang", languages[0])
 
 	def adventure(self):
 		adventure.start()
+
+	def password(self):
+		lower = string.ascii_lowercase
+		upper = string.ascii_uppercase
+		num = string.digits
+		all = lower + upper + num
+		temp = random.sample(all,10)
+		random_password = "".join(temp)
+		self.talk("Here is your highly secure password")
+		print(random_password)
+
+	def play_youtube(self, 	video):
+		self.talk('playing ' + video)
+		pywhatkit.playonyt(video)
+
+
 
 # Elsa#2561
 # https://github.com/atreyaved
